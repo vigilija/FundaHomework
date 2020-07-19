@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Net.Http;
 
 namespace FundaHomework
 {
@@ -6,7 +6,8 @@ namespace FundaHomework
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var fundaTopCalculatorService = new StatService(new Repository(new HttpClient()), new PropertyCountByBrokerCalculator());
+            fundaTopCalculatorService.PrintTopTen();
         }
     }
 }
