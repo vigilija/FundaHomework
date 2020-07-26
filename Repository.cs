@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace FundaHomework
 {
-    internal class Repository: IRepository
+    public class Repository: IRepository
     {
         private const string garden = "/tuin"; 
         private const string path = "http://partnerapi.funda.nl/feeds/Aanbod.svc/JSON/ac1b0b1572524640a0ecc54de453ea9f/?type=koop&zo=/amsterdam{0}/&page={1}&pagesize=25";

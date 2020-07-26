@@ -1,6 +1,14 @@
 using FundaHomework;
+using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Runtime.InteropServices.ComTypes;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
+using Moq;
+using Moq.Protected;
 
 namespace FundaHomeworkTest
 {
@@ -39,6 +47,53 @@ namespace FundaHomeworkTest
 
             Assert.Equal(10, result.Count);
 
+        }
+    }
+
+    public class ServiceCallTest
+    {
+        [Fact]
+        public void TestRepositoryResponceObjectCorrectness()
+        {
+            var testClass = new Repository(new HttpClient(new NewClass()));
+            var result = testClass.GetPropertiesAsync(1);
+            Assert.Equal(1, result.Result.Objects.Count);
+            Assert.Equal(5586465, result.Result.Objects[0].GlobalId);
+            Assert.Equal(24614, result.Result.Objects[0].MakelaarId);
+        }
+
+        [Fact]
+        public void TestRepositoryRetryOnErrorCode()
+        {
+            var badResponse = Task.FromResult(new HttpResponseMessage()
+            { StatusCode = HttpStatusCode.BadRequest });
+            
+            var response = Task.FromResult(new HttpResponseMessage()
+            { StatusCode = HttpStatusCode.OK, Content = new StringContent(@"{""Objects"": [{""GlobalId"": 5586465,""MakelaarId"": 24614,""MakelaarNaam"": ""Nieuw West Makelaardij B.V.""}]}") });
+
+            var mockHandler = new Mock<HttpMessageHandler>();
+            mockHandler.Protected()
+                       .SetupSequence<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                       .Returns(badResponse)
+                       .Returns(response);
+
+            var testRepository = new Repository(new HttpClient(mockHandler.Object));
+
+            var result = testRepository.GetPropertiesAsync(1);
+
+            mockHandler.Protected().Verify("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+
+            Assert.Equal(1, result.Result.Objects.Count);
+            Assert.Equal(5586465, result.Result.Objects[0].GlobalId);
+            Assert.Equal(24614, result.Result.Objects[0].MakelaarId);
+        }
+    }
+    public class NewClass : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new HttpResponseMessage()
+            { StatusCode = HttpStatusCode.OK, Content = new StringContent(@"{""Objects"": [{""GlobalId"": 5586465,""MakelaarId"": 24614,""MakelaarNaam"": ""Nieuw West Makelaardij B.V.""}]}") });
         }
     }
 }
