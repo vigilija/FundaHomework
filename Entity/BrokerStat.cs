@@ -1,4 +1,4 @@
-﻿namespace FundaHomework
+﻿namespace FundaHomework.Entity
 {
     public class BrokerStat
     {

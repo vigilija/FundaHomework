@@ -1,25 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using FundaHomework.Entity;
+using System.Collections.Generic;
 using System.Linq;
 
-namespace FundaHomework
+namespace FundaHomework.UseCase
 {
     public class PropertyCountByBrokerCalculator : IPropertyCountByBrokerCalculator
     {
         private Dictionary<int, int> PropertyCountById = new Dictionary<int, int>();
         private Dictionary<int, string> BrokerNameById = new Dictionary<int, string>();
 
-        public void AddProperties(IList<Property> propertyList)
+        public IList<BrokerStat> GetTopTen(IList<Property> propertyList)
         {
             foreach (var _property in propertyList)
             {
-                var count = PropertyCountById.GetValueOrDefault(_property.MakelaarId, 0);
-                PropertyCountById[_property.MakelaarId] = ++count;
-                BrokerNameById[_property.MakelaarId] = _property.MakelaarNaam;
-            }
-        }
-
-        public IList<BrokerStat> GetTopTen()
-        {
+                var count = PropertyCountById.GetValueOrDefault(_property.BrokerId, 0);
+                PropertyCountById[_property.BrokerId] = ++count;
+                BrokerNameById[_property.BrokerId] = _property.BrokerName;
+            } 
             return PropertyCountById
                 .OrderBy(kv => -kv.Value)
                 .Take(10)

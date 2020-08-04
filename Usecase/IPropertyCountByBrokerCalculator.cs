@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using FundaHomework.Entity;
+using System.Collections.Generic;
 
-namespace FundaHomework
+namespace FundaHomework.UseCase
 {
     public interface IPropertyCountByBrokerCalculator
     {
-        public void AddProperties(IList<Property> propertyList);
-        public IList<BrokerStat> GetTopTen();
         public string GetBrokerNameById(int id);
+        public IList<BrokerStat> GetTopTen(IList<Property> propertyList);
     }
 }

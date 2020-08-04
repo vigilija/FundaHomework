@@ -1,9 +1,10 @@
-﻿namespace FundaHomework
+﻿namespace FundaHomework.Entity
 {
     public class Property
     {
-        public int GlobalId { get; set; }
-        public int MakelaarId { get; set; }
-        public string MakelaarNaam { get; set; }
+            public int GlobalId { get; set; }
+            public int BrokerId { get; set; }
+            public string BrokerName { get; set; }
+       
     }
 }

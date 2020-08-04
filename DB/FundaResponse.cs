@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 
-namespace FundaHomework
+namespace FundaHomework.DB
 {
     public class FundaResponse
     {
-        public IList<Property> Objects { get; set; }
+        public IList<FundaProperty> Objects { get; set; }
     }
 }

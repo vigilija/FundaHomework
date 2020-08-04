@@ -1,9 +1,12 @@
-﻿using System;
+﻿using FundaHomework.Entity;
+using FundaHomework.UseCase;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace FundaHomework
+namespace FundaHomework.DB
 {
     public class Repository: IRepository
     {
@@ -16,26 +19,50 @@ namespace FundaHomework
             client = _client;
         }
 
-        public async Task<FundaResponse> GetPropertiesAsync(int page)
+        public IList<Property> GetAllProperties()
         {
-            return await GetPropertiesByPath(string.Format(path, "", page));        
+            var page = 0;
+            var result = new List<Property>();
+            var continueLoop = true;
+            while (continueLoop)
+            {
+                //c++;
+                var fundaResponse = GetProperties(string.Format(path, "", page));
+                if (fundaResponse.Objects.Count < 25 || fundaResponse == null || page == 5) { continueLoop = false;}
+                System.Threading.Thread.Sleep(600);
+                result.AddRange(fundaResponse.Objects.Select(s => new Property {GlobalId = s.GlobalId, BrokerId = s.MakelaarId, BrokerName = s.MakelaarNaam }));
+                page++;
+            };
+            return result;
         }
 
-        public async Task<FundaResponse> GetPropertiesWithGardenAsync(int page)
+        public IList<Property> GetAllPropertiesWithGarden()
         {
-            return await GetPropertiesByPath(string.Format(path, garden, page));
+            var page = 0;
+            var result = new List<Property>();
+            var continueLoop = true;
+            while (continueLoop)
+            {
+                //c++;
+                var fundaResponse = GetProperties(string.Format(path, garden, page));
+                if (fundaResponse.Objects.Count < 25 || fundaResponse == null) { continueLoop = false; }
+                System.Threading.Thread.Sleep(600);
+                result.AddRange(fundaResponse.Objects.Select(s => new Property { GlobalId = s.GlobalId, BrokerId = s.MakelaarId, BrokerName = s.MakelaarNaam }));
+                page++;
+            };
+            return result;
         }
 
-        public async Task<FundaResponse> GetPropertiesByPath(string path)
+        private FundaResponse GetProperties(string path)
         {
             for (var i = 0; i < 5; i++)
             {
                 try
                 {
-                    HttpResponseMessage response = await client.GetAsync(path);
+                    HttpResponseMessage response = client.GetAsync(path).GetAwaiter().GetResult();
                     if (response.IsSuccessStatusCode)
                     {
-                        var respString = await response.Content.ReadAsStringAsync();
+                        var respString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                         var fundaResponce = JsonSerializer.Deserialize<FundaResponse>(respString);
                         return fundaResponce;
                     }
