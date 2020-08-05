@@ -1,9 +1,6 @@
-using FundaHomework;
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -12,6 +9,7 @@ using Moq.Protected;
 using FundaHomework.Entity;
 using FundaHomework.UseCase;
 using FundaHomework.DB;
+using FundaHomework.Adapter;
 
 namespace FundaHomeworkTest
 {
@@ -24,15 +22,24 @@ namespace FundaHomeworkTest
                                                     new Property() { GlobalId = 2, BrokerId = 2, BrokerName = "Broker name2" },
                                                     new Property() { GlobalId = 3, BrokerId = 3, BrokerName = "Broker name3" },
                                                     new Property() { GlobalId = 4, BrokerId = 4, BrokerName = "Broker name4" },
-                                                    new Property() { GlobalId = 5, BrokerId = 2, BrokerName = "Broker name2" }
-            };
-            var calculator = new PropertyCountByBrokerCalculator();
-            //calculator.AddProperties(properties);
-            var result = calculator.GetTopTen(properties);
+                                                    new Property() { GlobalId = 5, BrokerId = 2, BrokerName = "Broker name2" }};
+
+
+            var mockRepository = new Mock<IRepository>();
+            mockRepository.Setup(s => s.GetAllProperties()).Returns(properties);
+            var mockPresenter = new Mock<ITopTenPresenter>();
+
+            IList<BrokerStat> result = null;
+
+            mockPresenter.Setup(h => h.SetTopTen(It.IsAny<IList<BrokerStat>>())).Callback<IList<BrokerStat>>(r => result = r);
+
+            var calculator = new StatCalculator(mockRepository.Object, mockPresenter.Object);
+
+            calculator.CalculateTopTen();
 
             Assert.Equal(4, result.Count);
-            Assert.Contains(result, x => x.Id == 1 && x.Name == "Broker name1" && x.PropertyCount == 1);
-            Assert.Contains(result, x => x.Id == 2 && x.Name == "Broker name2" && x.PropertyCount == 2);
+            Assert.Contains(result, x => x.Name == "Broker name1" && x.PropertyCount == 1);
+            Assert.Contains(result, x => x.Name == "Broker name2" && x.PropertyCount == 2);
         }
 
         [Fact]
@@ -44,9 +51,17 @@ namespace FundaHomeworkTest
                 properties.Add(new Property() { GlobalId = i, BrokerId = i, BrokerName = $"Broker name{i}" });
             }
 
-            var calculator = new PropertyCountByBrokerCalculator();
-           // calculator.AddProperties(properties);
-            var result = calculator.GetTopTen(properties);
+            var mockRepository = new Mock<IRepository>();
+            mockRepository.Setup(s => s.GetAllProperties()).Returns(properties);
+            var mockPresenter = new Mock<ITopTenPresenter>();
+
+            IList<BrokerStat> result = null;
+
+            mockPresenter.Setup(h => h.SetTopTen(It.IsAny<IList<BrokerStat>>())).Callback<IList<BrokerStat>>(r => result = r);
+
+            var calculator = new StatCalculator(mockRepository.Object, mockPresenter.Object);
+
+            calculator.CalculateTopTen();
 
             Assert.Equal(10, result.Count);
 

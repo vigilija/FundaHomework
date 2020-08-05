@@ -26,7 +26,6 @@ namespace FundaHomework.DB
             var continueLoop = true;
             while (continueLoop)
             {
-                //c++;
                 var fundaResponse = GetProperties(string.Format(path, "", page));
                 if (fundaResponse.Objects.Count < 25 || fundaResponse == null || page == 5) { continueLoop = false;}
                 System.Threading.Thread.Sleep(600);
@@ -43,9 +42,8 @@ namespace FundaHomework.DB
             var continueLoop = true;
             while (continueLoop)
             {
-                //c++;
                 var fundaResponse = GetProperties(string.Format(path, garden, page));
-                if (fundaResponse.Objects.Count < 25 || fundaResponse == null) { continueLoop = false; }
+                if (fundaResponse.Objects.Count < 25 || fundaResponse == null || page == 5) { continueLoop = false; }
                 System.Threading.Thread.Sleep(600);
                 result.AddRange(fundaResponse.Objects.Select(s => new Property { GlobalId = s.GlobalId, BrokerId = s.MakelaarId, BrokerName = s.MakelaarNaam }));
                 page++;

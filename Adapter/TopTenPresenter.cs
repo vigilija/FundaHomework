@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace FundaHomework.Adapter
 {
-    internal class TopTenPresenter
+    public class TopTenPresenter: ITopTenPresenter
     {
         private TopTen topTen;
 
@@ -14,7 +14,7 @@ namespace FundaHomework.Adapter
             this.topTen = topTen;
         }
 
-        internal void SetTopTen(IList<BrokerStat> lists)
+        public void SetTopTen(IList<BrokerStat> lists)
         {
             var i = 1;
             topTen.ViewStats = lists.Select(s => new ViewStat() {SequenceNumber = i++, BrokerName = s.Name, PropertyCount = s.PropertyCount }).ToList();

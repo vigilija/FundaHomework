@@ -1,42 +1,51 @@
 ﻿using FundaHomework.Adapter;
-using FundaHomework.DB;
 using FundaHomework.Entity;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FundaHomework.UseCase
 {
-    class StatCalculator : IStatCalculator
+    public class StatCalculator : IStatCalculator
     {
         private IRepository rep;
-        private PropertyCountByBrokerCalculator statCalculator;
-        private TopTenPresenter presenter;
+        private ITopTenPresenter presenter;
 
-        public StatCalculator(IRepository _rep, PropertyCountByBrokerCalculator _statCalculator, TopTenPresenter _presenter)
+        public StatCalculator(IRepository _rep, ITopTenPresenter _presenter)
         {
             rep = _rep;
-            statCalculator = _statCalculator;
             presenter = _presenter;
         }
 
         public void CalculateTopTen()
         {
-            var calculateStats = new PropertyCountByBrokerCalculator();
             var allProperties = rep.GetAllProperties();
 
-            presenter.SetTopTen(calculateStats.GetTopTen(allProperties));
+            presenter.SetTopTen(GetTopTen(allProperties));
+        }
 
-         /*   
-            var calculateStatsWithGarden = new PropertyCountByBrokerCalculator();
-            while (true)
+        public void CalculateTopTenWithGArden()
+        {
+            var withGardenProperties = rep.GetAllPropertiesWithGarden();
+
+            presenter.SetTopTen(GetTopTen(withGardenProperties));
+        }
+
+        private IList<BrokerStat> GetTopTen(IList<Property> propertyList)
+        {
+            Dictionary<int, int> PropertyCountById = new Dictionary<int, int>();
+            Dictionary<int, string> BrokerNameById = new Dictionary<int, string>();
+
+            foreach (var _property in propertyList)
             {
-                var fundaResponseWithGarden = rep.GetPropertiesWithGardenAsync(page).GetAwaiter().GetResult();
-                if (fundaResponseWithGarden.Objects.Count < 25 || fundaResponseWithGarden == null) { break; }
-                calculateStatsWithGarden.AddProperties(fundaResponseWithGarden.Objects);
-                System.Threading.Thread.Sleep(600);
-                page++;
-            };*/
-
+                var count = PropertyCountById.GetValueOrDefault(_property.BrokerId, 0);
+                PropertyCountById[_property.BrokerId] = ++count;
+                BrokerNameById[_property.BrokerId] = _property.BrokerName;
+            }
+            return PropertyCountById
+                .OrderBy(kv => -kv.Value)
+                .Take(10)
+                .Select(kv => new BrokerStat() { Id = kv.Key, PropertyCount = kv.Value, Name = BrokerNameById[kv.Key] })
+                .ToList();
         }
     }
 }
